@@ -2,8 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Custom range slider ──────────────────────────────────────────────────── */
-/* appearance-none removes all default styles; we re-add just the thumb.      */
+/* ── Mega whale card ─────────────────────────────────────────────────────── */
+
+.whale-mega {
+  background: linear-gradient(135deg, #431407cc 0%, #450a0acc 40%, #111827 100%);
+  animation: megaPulse 3s ease-in-out infinite;
+}
+
+@keyframes megaPulse {
+  0%, 100% { box-shadow: 0 0 18px 2px rgba(234, 88, 12, 0.18); }
+  50%       { box-shadow: 0 0 36px 6px rgba(234, 88, 12, 0.36); }
+}
+
+/* ── New-card fade-in ────────────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.35s ease-out forwards;
+}
+
+/* ── Custom range slider ─────────────────────────────────────────────────── */
+/* appearance-none removes all default styles; we re-add just the thumb.     */
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
