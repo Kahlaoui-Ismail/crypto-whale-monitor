@@ -1,0 +1,23 @@
+services:
+  api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file: .env
+    networks:
+      - whale-net
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - whale-net
+    restart: unless-stopped
+
+networks:
+  whale-net:
+    driver: bridge
