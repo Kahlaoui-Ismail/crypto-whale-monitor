@@ -112,7 +112,7 @@ docker-compose
 
 ## Screenshots
 
-> _Add screenshots to `docs/` and update links here._
+![Dashboard](docs/Demo.png)
 
 ---
 
