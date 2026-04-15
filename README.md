@@ -112,7 +112,7 @@ docker-compose
 
 ## Screenshots
 
-![Dashboard](docs/demo.png)
+![Dashboard](docs/Demo.png)
 
 ---
 
