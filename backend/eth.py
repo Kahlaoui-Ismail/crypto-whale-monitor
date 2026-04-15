@@ -4,10 +4,10 @@ import os
 import httpx
 
 from cache import tx_cache
+from config import app_config
 from models import Transaction
 
 ETHERSCAN_BASE = "https://api.etherscan.io/v2/api"
-ETH_THRESHOLD = float(os.getenv("ETH_THRESHOLD", "100"))
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL_SECONDS", "30"))
 API_KEY = os.getenv("ETHERSCAN_API_KEY", "")
 
@@ -79,7 +79,7 @@ async def poll_eth() -> None:
                         wei = int(value_hex, 16)
                         eth = wei / 1e18
 
-                        if eth >= ETH_THRESHOLD:
+                        if eth >= app_config.eth_threshold:
                             seen.add(tx_hash)
                             tx_cache.add(
                                 Transaction(

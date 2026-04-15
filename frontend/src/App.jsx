@@ -27,10 +27,23 @@ export default function App() {
   const [isLive, setIsLive]             = useState(true);
   const [enabledChains, setEnabledChains] = useState(new Set(['ETH', 'SOL']));
   const [pollMs, setPollMs]             = useState(DEFAULT_POLL_MS);
+  const [ethThreshold, setEthThreshold] = useState(1);
+  const [solThreshold, setSolThreshold] = useState(100);
   const prevHashes                       = useRef(new Set());
   const isFirstFetch                     = useRef(true);
 
   useEffect(() => { requestNotificationPermission(); }, []);
+
+  // Load current thresholds from backend on mount
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((d) => {
+        setEthThreshold(d.eth_threshold);
+        setSolThreshold(d.sol_threshold);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleToggleChain = useCallback((chain) => {
     setEnabledChains((prev) => {
@@ -41,6 +54,30 @@ export default function App() {
       return next;
     });
   }, []);
+
+  const patchThreshold = useCallback((patch) => {
+    fetch('/api/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        setEthThreshold(d.eth_threshold);
+        setSolThreshold(d.sol_threshold);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleChangeEthThreshold = useCallback((val) => {
+    setEthThreshold(val);
+    patchThreshold({ eth_threshold: val });
+  }, [patchThreshold]);
+
+  const handleChangeSolThreshold = useCallback((val) => {
+    setSolThreshold(val);
+    patchThreshold({ sol_threshold: val });
+  }, [patchThreshold]);
 
   const fetchTxns = useCallback(async () => {
     try {
@@ -114,12 +151,20 @@ export default function App() {
             onToggleChain={handleToggleChain}
             pollMs={pollMs}
             onChangePoll={setPollMs}
+            ethThreshold={ethThreshold}
+            onChangeEthThreshold={handleChangeEthThreshold}
+            solThreshold={solThreshold}
+            onChangeSolThreshold={handleChangeSolThreshold}
           />
         </div>
 
         <div className="mt-4 space-y-3">
           {(() => {
-            const visible = transactions.filter((tx) => enabledChains.has(tx.chain));
+            const visible = transactions.filter(
+              (tx) =>
+                enabledChains.has(tx.chain) &&
+                (tx.chain === 'ETH' ? tx.amount >= ethThreshold : tx.amount >= solThreshold)
+            );
             if (visible.length === 0) return (
               <div className="flex flex-col items-center justify-center py-32 text-gray-600">
                 <span className="text-5xl mb-4">🐋</span>

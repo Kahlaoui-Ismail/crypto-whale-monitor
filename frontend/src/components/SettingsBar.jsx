@@ -1,8 +1,10 @@
+import { useState } from 'react';
+
 const INTERVALS = [
-  { label: '10s',  ms: 10_000 },
-  { label: '30s',  ms: 30_000 },
-  { label: '1m',   ms: 60_000 },
-  { label: '5m',   ms: 300_000 },
+  { label: '10s', ms: 10_000 },
+  { label: '30s', ms: 30_000 },
+  { label: '1m',  ms: 60_000 },
+  { label: '5m',  ms: 300_000 },
 ];
 
 const CHAINS = ['ETH', 'SOL'];
@@ -18,9 +20,52 @@ const CHAIN_STYLES = {
   },
 };
 
-export default function SettingsBar({ enabledChains, onToggleChain, pollMs, onChangePoll }) {
+function ThresholdInput({ label, value, onChange, accentClass }) {
+  const [draft, setDraft] = useState('');
+  const [editing, setEditing] = useState(false);
+
+  const display = editing ? draft : value;
+
+  const commit = () => {
+    const n = parseFloat(draft);
+    if (!isNaN(n) && n > 0) onChange(n);
+    setEditing(false);
+    setDraft('');
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-gray-900 border border-gray-800 rounded-xl">
+    <div className="flex items-center gap-1.5">
+      <span className={`text-[10px] uppercase tracking-widest ${accentClass} opacity-70`}>{label}</span>
+      <span className="text-gray-600 text-xs">≥</span>
+      <input
+        type="number"
+        min="0"
+        step="any"
+        value={display}
+        onFocus={() => { setEditing(true); setDraft(String(value)); }}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.target.blur(); } }}
+        className={[
+          'w-20 bg-gray-800 border rounded-lg px-2 py-1 text-xs text-center',
+          'focus:outline-none focus:ring-1',
+          accentClass === 'text-blue-400'
+            ? 'border-gray-700 focus:border-blue-500 focus:ring-blue-500/30'
+            : 'border-gray-700 focus:border-purple-500 focus:ring-purple-500/30',
+        ].join(' ')}
+      />
+    </div>
+  );
+}
+
+export default function SettingsBar({
+  enabledChains, onToggleChain,
+  pollMs, onChangePoll,
+  ethThreshold, onChangeEthThreshold,
+  solThreshold, onChangeSolThreshold,
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3 bg-gray-900 border border-gray-800 rounded-xl">
 
       {/* ── Chain filters ── */}
       <div className="flex items-center gap-2">
@@ -42,6 +87,24 @@ export default function SettingsBar({ enabledChains, onToggleChain, pollMs, onCh
             );
           })}
         </div>
+      </div>
+
+      <div className="w-px h-5 bg-gray-800 hidden sm:block" />
+
+      {/* ── Thresholds ── */}
+      <div className="flex items-center gap-4">
+        <ThresholdInput
+          label="ETH"
+          value={ethThreshold}
+          onChange={onChangeEthThreshold}
+          accentClass="text-blue-400"
+        />
+        <ThresholdInput
+          label="SOL"
+          value={solThreshold}
+          onChange={onChangeSolThreshold}
+          accentClass="text-purple-400"
+        />
       </div>
 
       <div className="w-px h-5 bg-gray-800 hidden sm:block" />

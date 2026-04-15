@@ -5,12 +5,20 @@ import time
 import httpx
 
 from cache import tx_cache
+from config import app_config
 from models import Transaction
 
 SOL_RPC = "https://api.mainnet-beta.solana.com"
-SOL_THRESHOLD = float(os.getenv("SOL_THRESHOLD", "10000"))
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL_SECONDS", "30"))
 LAMPORTS = 1_000_000_000
+
+
+def _key_str(key) -> str:
+    """accountKeys entries are plain strings for legacy txns but
+    {"pubkey": "...", "signer": bool, "writable": bool} dicts for v0 txns."""
+    if isinstance(key, dict):
+        return key.get("pubkey", "unknown")
+    return key or "unknown"
 
 
 async def _fetch_sol_price(client: httpx.AsyncClient) -> float:
@@ -84,12 +92,13 @@ async def poll_sol() -> None:
 
                             pre = meta.get("preBalances", [])
                             post = meta.get("postBalances", [])
-                            keys = msg.get("accountKeys", [])
+                            # accountKeys is str[] for legacy txns, dict[] for v0 txns
+                            keys = [_key_str(k) for k in msg.get("accountKeys", [])]
 
                             for i, (p, q) in enumerate(zip(pre, post)):
                                 delta_lamports = p - q  # positive = SOL left this account
                                 sol_amount = delta_lamports / LAMPORTS
-                                if sol_amount < SOL_THRESHOLD:
+                                if sol_amount < app_config.sol_threshold:
                                     continue
 
                                 seen.add(sig)
