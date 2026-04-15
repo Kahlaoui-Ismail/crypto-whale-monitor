@@ -5,6 +5,10 @@ import SettingsBar from './components/SettingsBar';
 
 const DEFAULT_POLL_MS = 30_000;
 
+// Empty string locally (nginx proxy handles /api/*).
+// Set VITE_API_BASE=https://crypto-whale-monitor-api.onrender.com on Render.
+const API_BASE = import.meta.env.VITE_API_BASE ?? '';
+
 // ── Notifications ─────────────────────────────────────────────────────────────
 
 function requestNotificationPermission() {
@@ -109,7 +113,7 @@ export default function App() {
   useEffect(() => { requestNotificationPermission(); }, []);
 
   useEffect(() => {
-    fetch('/api/settings')
+    fetch(`${API_BASE}/api/settings`)
       .then((r) => r.json())
       .then((d) => { setEthThreshold(d.eth_threshold); setSolThreshold(d.sol_threshold); })
       .catch(() => {});
@@ -125,7 +129,7 @@ export default function App() {
   }, []);
 
   const patchThreshold = useCallback((patch) => {
-    fetch('/api/settings', {
+    fetch(`${API_BASE}/api/settings`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
@@ -145,7 +149,7 @@ export default function App() {
 
   const fetchTxns = useCallback(async () => {
     try {
-      const res  = await fetch('/api/transactions');
+      const res  = await fetch(`${API_BASE}/api/transactions`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
