@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -29,11 +29,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Crypto Whale Monitor", lifespan=lifespan)
 
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
+_allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_methods=["GET", "PATCH"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type"],
 )
 
 
@@ -57,9 +60,13 @@ async def get_settings():
 
 @app.patch("/api/settings")
 async def update_settings(body: ThresholdUpdate):
-    if body.eth_threshold is not None and body.eth_threshold > 0:
+    if body.eth_threshold is not None:
+        if not (0 < body.eth_threshold <= 100_000):
+            raise HTTPException(status_code=422, detail="eth_threshold must be between 0 and 100,000")
         app_config.eth_threshold = body.eth_threshold
-    if body.sol_threshold is not None and body.sol_threshold > 0:
+    if body.sol_threshold is not None:
+        if not (0 < body.sol_threshold <= 10_000_000):
+            raise HTTPException(status_code=422, detail="sol_threshold must be between 0 and 10,000,000")
         app_config.sol_threshold = body.sol_threshold
     return {
         "eth_threshold": app_config.eth_threshold,

@@ -1,8 +1,8 @@
 services:
   api:
     build: ./backend
-    ports:
-      - "8000:8000"
+    # Port 8000 is intentionally NOT published — the frontend nginx proxy
+    # reaches the API over the internal Docker network only.
     env_file: .env
     networks:
       - whale-net

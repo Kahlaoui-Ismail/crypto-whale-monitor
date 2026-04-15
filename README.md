@@ -11,8 +11,8 @@ Real-time dashboard that surfaces large on-chain movements for **Ethereum** (≥
 | Layer     | Tech                              |
 |-----------|-----------------------------------|
 | Backend   | FastAPI · Python 3.12 · httpx     |
-| Data      | Etherscan API · Solana public RPC |
-| Prices    | CoinGecko free API                |
+| Data      | Etherscan API v2 · Solana public RPC |
+| Prices    | Binance public ticker API            |
 | Frontend  | React 18 · Vite · Tailwind CSS    |
 | Infra     | Docker Compose                    |
 
@@ -34,6 +34,7 @@ ETHERSCAN_API_KEY=your_key_here
 ETH_THRESHOLD=100          # min ETH per transfer
 SOL_THRESHOLD=10000        # min SOL per transfer
 POLL_INTERVAL_SECONDS=30   # backend poll cadence
+ALLOWED_ORIGINS=http://localhost:3000  # comma-separated allowed CORS origins
 ```
 
 ### 2 — Build & run
@@ -120,4 +121,5 @@ docker-compose
 - Etherscan free tier: 5 req/s — the poller stays well under with 250 ms inter-block delay.
 - Solana public RPC has tight rate limits — 1 s delay between slot fetches.
 - No database, no auth, no login — intentionally simple.
-- USD prices fetched from CoinGecko once per poll cycle.
+- USD prices fetched from Binance's public ticker API once per poll cycle.
+- The API port (8000) is not published outside Docker — only the frontend (3000) is exposed.
