@@ -1,5 +1,7 @@
 # 🐋 Crypto Whale Monitor
 
+**Live demo:** https://crypto-whale-monitor.onrender.com
+
 Real-time dashboard that surfaces large on-chain movements for **Ethereum** (≥ 100 ETH) and **Solana** (≥ 10 000 SOL).
 
 ![demo placeholder](docs/demo.gif)
